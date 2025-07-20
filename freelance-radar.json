@@ -1,0 +1,488 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1200,
+        -160
+      ],
+      "id": "8cf15710-4356-49e4-ab1a-1726f03ca7b6",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://api.scraperapi.com/?api_key=[YOUR API KEY (Scraper API)]&url=https://www.freelancer.com/jobs/automation",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1008,
+        -160
+      ],
+      "id": "1e72b8f2-3236-492d-81cc-cee04ebb20be",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "title",
+              "cssSelector": "a[data-heading-link=\"true\"]",
+              "returnArray": true
+            },
+            {
+              "key": "link",
+              "cssSelector": "a[data-heading-link=\"true\"]",
+              "returnValue": "attribute",
+              "attribute": "href",
+              "returnArray": true
+            },
+            {
+              "key": "price",
+              "cssSelector": "div.JobSearchCard-secondary-price",
+              "returnArray": true
+            },
+            {
+              "key": "description",
+              "cssSelector": "p.JobSearchCard-primary-description",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        -816,
+        -160
+      ],
+      "id": "ef27b475-21cd-4815-8050-5b0718c57807",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "jsCode": "const baseURL = \"https://freelancer.com\";\nconst limit = 5; //50 max\n\nconst data = items[0].json;\n\nconst titles = data.title || [];\nconst descriptions = data.description || [];\nconst prices = data.price || [];\nconst links = data.link || [];\n\nlet promptText = `You are a freelance project evaluator. For each project in the list below, rate it from 1 to 10 based on its clarity, feasibility, and attractiveness for freelancers. Also provide a short comment (up to 20 words) explaining the rating.\\nReturn a JSON array of objects with this format: {\"score\": number, \"comment\": \"text\"}.\\nIMPORTANT: Return ONLY the JSON array, without any extra text or markdown.\\n\\nHere are the projects:\\n\\n`;\n\nfor (let i = 0; i < Math.min(limit, titles.length); i++) {\n  promptText += `${i + 1}) Title: ${titles[i] || \"No title\"}\\n`;\n  promptText += `Description: ${descriptions[i] || \"No description\"}\\n`;\n  promptText += `Price: ${prices[i] || \"N/A\"}\\n`;\n  promptText += `Link: ${baseURL + (links[i] || \"\")}\\n\\n`;\n}\n\nreturn [{\n  json: {\n    prompt: promptText,\n    vacancies: {\n      title: titles.slice(0, limit),\n      description: descriptions.slice(0, limit),\n      price: prices.slice(0, limit),\n      link: links.slice(0, limit)\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -656,
+        -160
+      ],
+      "id": "bd9f9a5b-e611-4c2f-b152-b4e9de4983be",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1-DR75AbCgMm9cyBPx_ckrpgihN5iLG2a8A-JiMe4vYs",
+          "mode": "list",
+          "cachedResultName": "Freelance Projects",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-DR75AbCgMm9cyBPx_ckrpgihN5iLG2a8A-JiMe4vYs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Freelance Projects Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-DR75AbCgMm9cyBPx_ckrpgihN5iLG2a8A-JiMe4vYs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Title": "={{ $json.Title }}",
+            "Description": "={{ $json.Description }}",
+            "Price": "={{ $json.Price }}",
+            "Link": "={{ $json.Link }}",
+            "GPT Score": "={{ $json['GPT Score'] }}",
+            "GPT Comment": "={{ $json['GPT Comment'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Description",
+              "displayName": "Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Price",
+              "displayName": "Price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Link",
+              "displayName": "Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "GPT Score",
+              "displayName": "GPT Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "GPT Comment",
+              "displayName": "GPT Comment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -1008,
+        16
+      ],
+      "id": "eb66552c-66ed-4e0a-9c91-c75d9cef17c7",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gwvlgzGwKUsIMPuP",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.prompt }}"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.4
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -528,
+        -256
+      ],
+      "id": "07ce5b3a-0d60-4abb-8a12-fb56b767699c",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "moKL5IA8cEn21cUh",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const baseURL = \"https://freelancer.com\";\n\n// items[0] - GPT response\nconst gptResponseRaw = items[0].json.content || items[0].json.message?.content || \"\";\n\n// Clean Markdown (```json ... ```)\nconst gptResponseClean = gptResponseRaw.replace(/```json|```/g, '').trim();\n\nlet gptData;\ntry {\n  gptData = JSON.parse(gptResponseClean);\n} catch (e) {\n  throw new Error(\"Failed to parse JSON from GPT response:\\n\" + gptResponseClean);\n}\n\n// items[1] - original vacancies\nconst vacancies = items[1].json.vacancies || {};\n\n// Extract arrays from vacancies (in case there are fewer than GPT responses)\nconst titles = vacancies.title || [];\nconst descriptions = vacancies.description || [];\nconst prices = vacancies.price || [];\nconst links = vacancies.link || [];\n\n// Build output array — combine all data for each project\nconst output = gptData.map((item, index) => ({\n  json: {\n    Title: titles[index] || \"No title\",\n    Description: descriptions[index] || \"No description\",\n    Price: prices[index] || \"N/A\",\n    Link: links[index] ? baseURL + links[index] : \"No link\",\n    \"GPT Score\": item.score,\n    \"GPT Comment\": item.comment,\n    Index: index + 1\n  }\n}));\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        16
+      ],
+      "id": "42781a9e-e57f-47f5-8c58-79a1822b242a",
+      "name": "Code1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -240,
+        -176
+      ],
+      "id": "fd42dd72-3f3e-4d01-83e6-176013ddfce2",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1ce3e5f5-e364-4f59-8d41-7a30d4606c62",
+              "leftValue": "={{ $json['GPT Score'] }}",
+              "rightValue": 7,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -816,
+        16
+      ],
+      "id": "183aa8f8-4396-4696-9070-585acc188345",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "8067240346",
+        "text": "=🔥 *New top freelance project:*  \n\n*Title:* {{ $json[\"Title\"] }}  \n*Price:* {{ $json[\"Price\"] }}  \n\n🔗 [View project]({{ $json[\"Link\"] }})  \n\n*Rating:* {{ $json[\"GPT Score\"] }} out of 10  \n*Comment:* _{{ $json[\"GPT Comment\"] }}_\n",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -576,
+        0
+      ],
+      "id": "8bc9a272-a692-4b3a-8dd2-5c8e61f84990",
+      "name": "Send a text message",
+      "webhookId": "4cb9fc7d-1d09-421b-a7d1-6827e6ce071a",
+      "credentials": {
+        "telegramApi": {
+          "id": "D0x0ArrGsMRwNEV4",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "8067240346",
+        "text": "=Data collection from the freelance platform has begun on {{ $json['Readable date'] }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1008,
+        -336
+      ],
+      "id": "239230b0-6fd5-4035-904f-c92515873d5d",
+      "name": "Send a text message1",
+      "webhookId": "b89b8e7e-ede2-4b4e-9d23-eef64a61ebd3",
+      "credentials": {
+        "telegramApi": {
+          "id": "D0x0ArrGsMRwNEV4",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "8067240346",
+        "text": "The AI has completed the project evaluations.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -240,
+        -336
+      ],
+      "id": "1f50c493-c2ce-42aa-83f7-7da51310a16e",
+      "name": "Send a text message2",
+      "webhookId": "984d27d8-eb94-44fb-a860-305e52a57323",
+      "credentials": {
+        "telegramApi": {
+          "id": "D0x0ArrGsMRwNEV4",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "260f9774-d37d-4cb6-afe4-5f842ecb2052",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "65d7e9e1efccb8f60cf9ee2f5065c0f82b838185fc039a0f0023f1835dae4546"
+  },
+  "id": "z1Y04RxWDQLpvvQM",
+  "tags": []
+}
