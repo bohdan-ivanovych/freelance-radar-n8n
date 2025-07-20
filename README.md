@@ -25,10 +25,11 @@
 
 ## 📸 Demo
 
-![demo](./screenshots/demo.gif)
+<img width="1156" height="542" alt="image" src="https://github.com/user-attachments/assets/cf345a19-6907-4e49-9ba0-92bad32bc807" />
+<img width="1059" height="952" alt="image" src="https://github.com/user-attachments/assets/6b44b790-da30-4b8a-874e-13d7c54a8e93" />
+
 
 🎥 [Watch the video demo](https://youtu.be/GAj2K9AVHp8?si=HYjaZ2M4H3pqhMUL)  
-🖼️ [View more screenshots](./screenshots)
 
 ---
 
